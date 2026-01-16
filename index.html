@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English-5-Speaking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&family=Pangolin&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6C5CE7; --secondary: #A29BFE; --accent: #00B894;
+            --error: #FF7675; --bg: #F0F4F8; --white: #FFFFFF; --gold: #F1C40F;
+        }
+        body { font-family: 'Lexend', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #2D3436; }
+        .container { max-width: 850px; margin: auto; background: var(--white); padding: 30px; border-radius: 40px; box-shadow: 0 15px 45px rgba(0,0,0,0.1); }
+        
+        .header-title { text-align: center; color: var(--primary); font-family: 'Pangolin', cursive; font-size: 3.2rem; margin: 10px 0; border-bottom: 4px dashed var(--secondary); display: block; padding-bottom: 10px; }
+        
+        .mode-switch { display: flex; gap: 10px; margin: 25px 0; background: #EEE; padding: 6px; border-radius: 50px; }
+        .mode-btn { flex: 1; padding: 12px; border: none; border-radius: 40px; cursor: pointer; font-weight: bold; font-family: inherit; transition: 0.3s; }
+        .mode-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3); }
+
+        .input-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        input, select, textarea { width: 100%; padding: 15px; border-radius: 20px; border: 2px solid #E0E0E0; font-family: inherit; font-size: 16px; box-sizing: border-box; outline: none; }
+        
+        .card { background: #F9FBFF; padding: 25px; border-radius: 30px; margin-bottom: 20px; border: 1px solid #EBF0F5; }
+        .sample-box { background: white; padding: 20px; border-radius: 20px; border-left: 8px solid var(--accent); margin: 15px 0; line-height: 1.6; font-size: 1.1rem; }
+        
+        .btn-record { background: var(--primary); color: white; border: none; padding: 20px; border-radius: 50px; font-size: 1.4rem; font-weight: bold; width: 100%; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(108,92,231,0.2); }
+        .btn-listen { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 10px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+
+        .feedback-area { background: #FFF; padding: 25px; border-radius: 25px; border: 2px dashed #D1D8E0; margin-top: 20px; }
+        .correct { color: var(--accent); font-weight: bold; }
+        .fix { color: var(--error); text-decoration: underline; font-weight: bold; cursor: pointer; }
+        .suggestion-box { margin-top: 15px; padding: 15px; background: #E3F2FD; border-radius: 15px; border: 1px solid #BBDEFB; }
+
+        /* Certificate Styles */
+        #cert {
+            display: none; margin-top: 40px; padding: 60px; 
+            border: 15px solid #FDCB6E; background: #FFFEF9;
+            text-align: center; border-radius: 10px; position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+        }
+        .cert-head { font-family: 'Pangolin', cursive; font-size: 4rem; color: #B8860B; margin: 0; }
+        .cert-sub { letter-spacing: 4px; color: #7F8C8D; font-weight: bold; font-size: 1.2rem; }
+        .cert-name { font-size: 3.5rem; color: var(--primary); border-bottom: 3px solid #DDD; display: inline-block; margin: 25px 0; padding: 0 40px; }
+        .stars { font-size: 4.5rem; color: var(--gold); margin: 20px 0; letter-spacing: 15px; }
+        .cert-footer { display: flex; justify-content: space-around; margin-top: 80px; }
+        .signature { border-top: 2px solid #555; width: 250px; padding-top: 10px; font-style: italic; font-size: 1.3rem; color: #2D3436; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-title">English-5-Speaking</div>
+
+    <div class="mode-switch">
+        <button id="btnUnit" class="mode-btn active" onclick="setMode('unit')">Học Theo Unit</button>
+        <button id="btnFree" class="mode-btn" onclick="setMode('free')">Nói Tự Do (Free Talk)</button>
+    </div>
+
+    <div class="input-bar">
+        <input type="text" id="nameInp" placeholder="Họ và tên học sinh...">
+        <input type="text" id="classInp" placeholder="Lớp (Vd: 5/1)">
+    </div>
+
+    <div id="unitSection" class="card">
+        <label><b>Chọn bài học:</b></label>
+        <select id="unitSel" onchange="changeUnit()" style="margin-top:10px; cursor:pointer;"></select>
+        <div class="sample-box" id="sampleTxt"></div>
+        <button class="btn-listen" onclick="playVoice(document.getElementById('sampleTxt').innerText)">🔊 Nghe cô đọc mẫu</button>
+    </div>
+
+    <div id="freeSection" class="card" style="display:none">
+        <div class="sample-box"><b>AI Free Talk:</b> Con hãy nói bất cứ điều gì con muốn bằng tiếng Anh. Cô sẽ sửa lỗi chi tiết cho con nhé! 🌟</div>
+    </div>
+
+    <div class="card">
+        <textarea id="output" rows="3" placeholder="Lời con nói sẽ hiện ở đây sau khi nhấn nút..."></textarea>
+        <button class="btn-record" id="recBtn" onclick="startRec()">🎙️ NHẤN ĐỂ NÓI</button>
+    </div>
+
+    <div class="feedback-area" id="feedback">
+        <h3 style="margin-top:0; color:var(--primary)">🤖 Kết quả từ Cô AI:</h3>
+        <div id="fbContent">Đang chờ con...</div>
+    </div>
+
+    <div id="cert">
+        <div class="cert-head">CERTIFICATE</div>
+        <div class="cert-sub">OF ACHIEVEMENT</div>
+        <p style="font-size: 1.4rem; margin-top: 30px;">This award is presented to</p>
+        <div class="cert-name" id="cName">...</div>
+        <p style="font-size: 1.2rem;">Class: <span id="cClass">...</span></p>
+        <p>For outstanding performance in</p>
+        <h2 id="cUnit" style="color:#D4AF37; font-size: 2.2rem;">UNIT 1</h2>
+        <div class="stars" id="cStars">⭐⭐⭐⭐⭐</div>
+        <p style="font-size: 1.2rem; margin-top: 20px;"><i>"Keep shining like a star!"</i></p>
+        <div class="cert-footer">
+            <div class="signature">Mrs Tran Thi Kim Yen</div>
+            <div class="signature">Mrs Pham Thi Ngoc Bich</div>
+        </div>
+    </div>
+</div>
+
+<script>
+const lessons = {
+    1: { t: "Unit 1: All about me!", s: "I’m Hoang. I’m in class 5/3. I live in the countryside. My favourite colour is yellow. My favourite animal is a dolphin. My favourite food is a sandwich. My favourite sport is table tennis." },
+    2: { t: "Unit 2: Our homes", s: "I live in a flat. My address is 65 Le Loi Street. It is a big and modern building in the city." },
+    3: { t: "Unit 3: My foreign friends", s: "I have many foreign friends. He is Vietnamese. She is American. He is very active and she is very clever." },
+    4: { t: "Unit 4: Our free-time activities", s: "I like watering the flowers and playing the violin. At the weekend, I always surf the Internet and read books." },
+    5: { t: "Unit 5: My future job", s: "I’d like to be a teacher because I’d like to teach children. My brother wants to be a firefighter to save people from fires." },
+    6: { t: "Unit 6: Our school rooms", s: "Go past the library and turn right. The art room is on the second floor. It is next to the computer room." },
+    7: { t: "Unit 7: Our favourite school activities", s: "She likes reading books because it is interesting. We love doing school projects together." },
+    8: { t: "Unit 8: In our classroom", s: "The crayons are on the table and the glue sticks are beside the books. This pencil sharpener is mine." },
+    9: { t: "Unit 9: Our outdoor activities", s: "We were at the campsite last week. We danced around the campfire and watched the fish in the pond." },
+    10: { t: "Unit 10: Our school trip", s: "They went to Ba Na Hills last month. They visited the old buildings and took many beautiful photos." },
+    11: { t: "Unit 11: Family time", s: "I swam with my mother in the sea. We took a boat trip around the bay and ate delicious seafood." },
+    12: { t: "Unit 12: Our Tet holiday", s: "I will make banh chung and decorate the house. I will visit my grandparents and get lucky money." },
+    13: { t: "Unit 13: Our special days", s: "We will sing and dance on Children's Day. We will have pizza and milk tea at the party." },
+    14: { t: "Unit 14: Staying healthy", s: "She does yoga once a week to stay healthy. She does morning exercise and eats healthy food every day." },
+    15: { t: "Unit 15: Our health", s: "I have a toothache and a fever. You should go to the dentist and take some rest." },
+    16: { t: "Unit 16: Seasons and the weather", s: "It is cold in winter, so I wear a jumper and jeans. In summer, it is hot and sunny." },
+    17: { t: "Unit 17: Stories for children", s: "The main characters are the fox and the crow. The tortoise ran fast and worked very hard." },
+    18: { t: "Unit 18: Means of transport", s: "I want to visit Dragon Bridge. You can get there by bus or by taxi. It is very fantastic." },
+    19: { t: "Unit 19: Places of interest", s: "I think Hoi An Old Town is beautiful and peaceful. It is about twenty-nine kilometres from Da Nang." },
+    20: { t: "Unit 20: Our summer holidays", s: "I am going to visit Phong Nha Cave this summer. I am going to go camping and join a music club." }
+};
+
+let currentMode = 'unit';
+const sel = document.getElementById('unitSel');
+for(let i in lessons) sel.innerHTML += `<option value="${i}">${lessons[i].t}</option>`;
+
+function setMode(m) {
+    currentMode = m;
+    document.getElementById('btnUnit').classList.toggle('active', m === 'unit');
+    document.getElementById('btnFree').classList.toggle('active', m === 'free');
+    document.getElementById('unitSection').style.display = m === 'unit' ? 'block' : 'none';
+    document.getElementById('freeSection').style.display = m === 'free' ? 'block' : 'none';
+    document.getElementById('cert').style.display = 'none';
+}
+
+function changeUnit() {
+    document.getElementById('sampleTxt').innerText = lessons[sel.value].s;
+    document.getElementById('cert').style.display = 'none';
+}
+changeUnit();
+
+function playVoice(text) {
+    window.speechSynthesis.cancel();
+    let utter = new SpeechSynthesisUtterance(text);
+    let voices = window.speechSynthesis.getVoices();
+    utter.voice = voices.find(v => v.lang === 'en-GB' && v.name.includes('Female')) || voices.find(v => v.lang === 'en-GB');
+    utter.rate = 0.85; 
+    utter.pitch = 1.1;
+    window.speechSynthesis.speak(utter);
+}
+
+const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+const rec = new Speech();
+rec.lang = 'en-US';
+
+function startRec() {
+    rec.start();
+    document.getElementById('recBtn').innerText = "🔴 CÔ ĐANG NGHE CON...";
+}
+
+rec.onresult = (e) => {
+    const said = e.results[0][0].transcript;
+    document.getElementById('output').value = said;
+    document.getElementById('recBtn').innerText = "🎙️ NHẤN ĐỂ NÓI";
+    
+    if (currentMode === 'unit') analyzeUnit(said);
+    else analyzeFree(said);
+};
+
+function analyzeUnit(said) {
+    let sample = lessons[sel.value].s.toLowerCase().replace(/[.,!]/g,"");
+    let input = said.toLowerCase().replace(/[.,!]/g,"");
+    let sArr = sample.split(" ");
+    let iArr = input.split(" ");
+    
+    let html = "";
+    let mistakes = 0;
+    
+    sArr.forEach(word => {
+        if (iArr.includes(word)) {
+            html += `<span class="correct">${word}</span> `;
+        } else {
+            html += `<span class="fix" onclick="playVoice('${word}')">${word}</span> `;
+            mistakes++;
+        }
+    });
+
+    document.getElementById('fbContent').innerHTML = `<p><b>Phân tích:</b> (Bấm từ màu cam để nghe lại nhé)</p><p>${html}</p>`;
+    
+    let accuracy = ((sArr.length - mistakes) / sArr.length) * 100;
+    let stars = accuracy > 65 ? 5 : (accuracy > 40 ? 4 : 3);
+    
+    if(mistakes === 0) playVoice("Brilliant! Five stars for you.");
+    else playVoice("Well done! Try again with the orange words.");
+    
+    showCert(stars, lessons[sel.value].t);
+}
+
+function analyzeFree(said) {
+    let fixed = said.replace(/\bi is\b/gi, "I am")
+                    .replace(/\bshe have\b/gi, "she has")
+                    .replace(/\bhe have\b/gi, "he has")
+                    .replace(/\bi like play\b/gi, "I like playing");
+    
+    document.getElementById('fbContent').innerHTML = `
+        <p><b>Con vừa nói:</b> "${said}"</p>
+        <div class="suggestion-box">
+            <p style="margin:0 0 5px 0"><b>💡 Gợi ý từ Cô AI:</b></p>
+            <p style="color:var(--primary); font-weight:bold; font-size:1.1rem; margin-bottom:10px;">"${fixed}"</p>
+            <button class="btn-listen" onclick="playVoice('${fixed}')" style="margin:0; padding:5px 15px; font-size:14px;">🔊 Nghe câu sửa mẫu</button>
+        </div>
+    `;
+    
+    playVoice(said);
+    showCert(5, "Free Speaking Master");
+}
+
+function showCert(stars, title) {
+    document.getElementById('cName').innerText = document.getElementById('nameInp').value || "Super Star";
+    document.getElementById('cClass').innerText = document.getElementById('classInp').value || "5/1";
+    document.getElementById('cUnit').innerText = title;
+    document.getElementById('cStars').innerText = "⭐".repeat(stars);
+    document.getElementById('cert').style.display = 'block';
+    document.getElementById('cert').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
